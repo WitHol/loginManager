@@ -5,8 +5,9 @@
 #include <string>
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
-
-void authenticate(const char * user, const char * password);
+#include <stdbool.h>
+#include <pwd.h>
+#include <paths.h>
 
 class TUI
 {
@@ -34,4 +35,22 @@ class TUI
     void setup();
     void write();
     void processInput();
+};
+
+class Authenticator
+{
+    public:
+    
+    bool login(const char * user, const char * password, pid_t * childPid);
+    bool logout();
+
+    private:
+
+    pam_handle_t *pam_handle;
+
+    void init_env(struct passwd *pw);
+    void set_env(char *name, char *value);
+    int end(int last_result);
+    int conv(int num_msg, const struct pam_message **msg, 
+        struct pam_response **resp, void *appdata_ptr);
 };
