@@ -9,7 +9,11 @@ int main()
         tui.loop();
     }
 
-    authenticate(tui.login.c_str(), tui.password.c_str());
+    pid_t pid;
+
+    Authenticator authenticator;
+    authenticator.login(tui.login.c_str(), tui.password.c_str(), &pid);
+    authenticator.logout();
 
     return 0;
 }
