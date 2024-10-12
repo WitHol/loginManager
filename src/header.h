@@ -9,6 +9,7 @@
 #include <pwd.h>
 #include <paths.h>
 #include <unistd.h>
+#include <fstream>
 
 class TUI
 {
@@ -16,6 +17,8 @@ class TUI
 
     std::string login;
     std::string password;
+
+    bool close = false;
 
     TUI();
     ~TUI();
@@ -47,7 +50,7 @@ class Authenticator
 
     private:
 
-    pam_handle_t *phandle;
+    struct pam_handle *phandle;
 
     void init_env(struct passwd *pw);
     void set_env(char *name, char *value);

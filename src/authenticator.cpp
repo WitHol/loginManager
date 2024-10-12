@@ -1,6 +1,6 @@
 #include "header.h"
 
-#define SERVICE_NAME "display_manager"
+#define SERVICE_NAME "system-login"
 
 #define err(name)                                                               \
     {                                                                           \
@@ -12,7 +12,8 @@
 bool Authenticator::login(const char *username, const char *password, pid_t *child_pid) 
 {
     const char * data[2] = {username, password};
-    pam_conv pconv = {conv, data};
+    struct pam_conv pconv = {conv, data};
+    phandle = NULL;
     int result;
 
     result = pam_start(SERVICE_NAME, username, &pconv, &phandle);
@@ -36,14 +37,16 @@ bool Authenticator::login(const char *username, const char *password, pid_t *chi
     *child_pid = fork();
     if (*child_pid == 0) 
     {
-        chdir((*pw).pw_dir);
-        
-        execl((*pw).pw_shell, (*pw).pw_shell, "-c", "exec /usr/bin/bash --login .xinitrc", NULL);
-        std::cout << "Failed to start window manager";
+        setuid(pw->pw_uid);
+        chdir(pw->pw_dir);
+        char *cmd = "exec /usr/bin/sh --login .xinitrc";
+        execl(pw->pw_shell, pw->pw_shell, "-c", cmd);
+        printf("Failed to start window manager");
         exit(1);
     }
 
 
+    delete phandle;
     return true;
 }
 
@@ -69,10 +72,8 @@ int Authenticator::end(int last_result) {
     return result;
 }
 
-int Authenticator::conv(int num_msg, const struct pam_message **msg, 
-            struct pam_response **resp, void *appdata_ptr) 
+int Authenticator::conv(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr) 
 {
-
     *resp = (pam_response*)calloc(num_msg, sizeof(struct pam_response));
     if (*resp == NULL) return PAM_BUF_ERR;
 
@@ -115,7 +116,6 @@ int Authenticator::conv(int num_msg, const struct pam_message **msg,
 
     return result;
 }
-
 
 void Authenticator::init_env(struct passwd *pw) 
 {

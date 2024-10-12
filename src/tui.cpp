@@ -29,7 +29,7 @@ void TUI::processInput()
     else if(input == KEY_RIGHT) /* TODO */;
     else if(input == KEY_LEFT) /* TODO */;
     else if(input == CTRL('j') && current == &login) current = &password;
-    else if(input == CTRL('j') && current == &password) /* TODO */;
+    else if(input == CTRL('j') && current == &password) close = true;
     else if(input == KEY_BACKSPACE){ if((*current).length()) (*current).pop_back(); }
     else (*current).push_back(input);
 }
